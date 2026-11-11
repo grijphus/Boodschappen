@@ -2,6 +2,11 @@
   "schemaVersion": 2,
   "kind": "app",
   "name": "github__grijphus__Boodschappen",
+  "deployment": {
+    "organizationId": "00d98343-519f-432f-ad0a-4251154d646d",
+    "workspaceId": "c95d8d34-15cc-4ad9-8e41-0a35b6a40881",
+    "appId": "01a1ca23-4720-7611-acca-f6d91e9df2fd"
+  },
   "modules": [
     {
       "type": "app",

@@ -24,8 +24,13 @@ npx wrangler secret put HTTP_AUTH_TOKEN     # openssl rand -hex 32
 # optional: npx wrangler secret put PICNIC_DEVICE_ID / PICNIC_AGENT
 # PICNIC_COUNTRY_CODE defaults to NL in wrangler.jsonc vars; change there for DE/FR
 
-npx wrangler deploy
+npm run deploy
 ```
+
+`npm run deploy` (not bare `npx wrangler deploy`) matters: the `predeploy` script
+runs `npm ci` in `../../modules/picnic` first, because the Worker bundles the
+vendored sources and esbuild resolves their bare imports (`zod`, `picnic-api`, …)
+from `modules/picnic/node_modules`.
 
 The Worker is then live at `https://picnic-mcp.<your-subdomain>.workers.dev/mcp`.
 

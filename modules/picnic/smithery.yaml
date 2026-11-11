@@ -1,0 +1,49 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - picnicUsername
+      - picnicPassword
+    properties:
+      picnicUsername:
+        type: string
+        description: Your Picnic account username/email
+      picnicPassword:
+        type: string
+        description: Your Picnic account password
+      picnicCountryCode:
+        type: string
+        description: Country code for Picnic (NL or DE)
+        default: "NL"
+        enum: ["NL", "DE"]
+      enableHttpServer:
+        type: boolean
+        description: Enable HTTP server mode
+        default: false
+      httpPort:
+        type: integer
+        description: HTTP server port
+        default: 3000
+      httpHost:
+        type: string
+        description: HTTP server host
+        default: "localhost"
+  commandFunction:
+    # A function that produces the CLI command to start the MCP on stdio.
+    |-
+    (config) => ({
+      command: 'node',
+      args: ['bin/mcp-server.js'],
+      env: {
+        PICNIC_USERNAME: config.picnicUsername,
+        PICNIC_PASSWORD: config.picnicPassword,
+        PICNIC_COUNTRY_CODE: config.picnicCountryCode || 'NL',
+        ENABLE_HTTP_SERVER: config.enableHttpServer ? 'true' : 'false',
+        HTTP_PORT: config.httpPort?.toString() || '3000',
+        HTTP_HOST: config.httpHost || 'localhost'
+      }
+    })

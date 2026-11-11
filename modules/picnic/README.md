@@ -1,0 +1,1320 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/ivo-toby-mcp-picnic-badge.png)](https://mseep.ai/app/ivo-toby-mcp-picnic)
+
+# MCP Picnic - AI-Powered Grocery Shopping Assistant
+
+[![smithery badge](https://smithery.ai/badge/@ivo-toby/mcp-picnic)](https://smithery.ai/server/@ivo-toby/mcp-picnic)
+
+An intelligent Model Context Protocol (MCP) server that enables AI assistants to interact with Picnic, the online supermarket delivery service. This server transforms your AI assistant into a smart grocery shopping companion that can help you plan meals, manage your shopping cart, track deliveries, and optimize your grocery shopping experience.
+
+## What is MCP Picnic?
+
+MCP Picnic is a bridge between AI assistants (like Claude, ChatGPT, or other MCP-compatible tools) and Picnic's grocery delivery service. It provides:
+
+- **🛒 Smart Shopping**: Search products, manage your cart, and place orders through natural conversation
+- **🍽️ Meal Planning**: Get AI-powered meal plans with automatic shopping list generation
+- **💰 Budget Management**: Shop within your budget with cost-conscious recommendations
+- **🚚 Delivery Tracking**: Monitor your orders and optimize delivery schedules
+- **🥗 Dietary Support**: Find products that match your dietary restrictions and health goals
+- **📱 Complete Integration**: Access all Picnic features through your AI assistant
+
+### Supported Countries
+
+- 🇳🇱 Netherlands
+- 🇩🇪 Germany
+- 🇫🇷 France
+
+## Key Features
+
+### 🤖 AI-Powered Shopping Tools
+
+- **Product Search**: Find any product in Picnic's catalog
+- **Weekly Promotions**: Fetch current Picnic deals from the app's "Alle acties" page
+- **Cart Management**: Add, remove, and modify items in your shopping cart
+- **Order Tracking**: Monitor delivery status and driver location
+- **Account Management**: Access your profile, payment methods, and order history
+
+### 🎯 Intelligent Prompts
+
+- **Meal Planner**: Create weekly meal plans with automatic shopping lists
+- **Budget Shopping**: Stay within budget while maintaining quality
+- **Quick Dinners**: Find fast meal solutions for busy schedules
+- **Healthy Eating**: Get nutrition-focused product recommendations
+- **Special Occasions**: Plan for parties, holidays, and gatherings
+- **Pantry Restocking**: Maintain essential household supplies
+- **Recipe Recreation**: Find ingredients for specific recipes
+- **Dietary Substitutions**: Get alternatives for dietary restrictions
+
+## How to Use
+
+### Prerequisites
+
+- A Picnic account (available in Netherlands, Germany, or France)
+- An MCP-compatible AI assistant (Claude Desktop, Continue, etc.)
+- Node.js 18+ installed on your system
+
+### Quick Start
+
+1. **Install the server**:
+
+```bash
+npm install -g mcp-picnic
+```
+
+2. **Configure Claude Desktop** to use the MCP server:
+
+**macOS**: Edit `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: Edit `%APPDATA%\Claude\claude_desktop_config.json`
+
+Add this configuration:
+
+```json
+{
+  "mcpServers": {
+    "picnic": {
+      "command": "npx",
+      "args": ["-y", "mcp-picnic"],
+      "env": {
+        "PICNIC_USERNAME": "your-picnic-email@example.com",
+        "PICNIC_PASSWORD": "your-picnic-password",
+        "PICNIC_COUNTRY_CODE": "NL"
+      }
+    }
+  }
+}
+```
+
+**Important**:
+- Replace `your-picnic-email@example.com` and `your-picnic-password` with your actual Picnic account credentials.
+- Set `PICNIC_COUNTRY_CODE` to `"DE"` for Germany, `"FR"` for France, or `"NL"` for the Netherlands (default).
+
+3. **Restart Claude Desktop** completely
+
+4. **Complete 2FA** (if enabled on your account) - ask your MCP client/assistant to call the `picnic_generate_2fa_code` tool, then provide the received code so it can call `picnic_verify_2fa_code`. See the [Authentication](#authentication) section for details.
+
+5. **Start using it** - you should see a 🔨 hammer icon in the input area:
+
+```
+"I want to plan meals for this week and order groceries from Picnic"
+```
+
+### Example Conversations
+
+**Meal Planning**:
+
+```
+User: "Plan healthy meals for 2 people for 5 days, budget €75"
+AI: I'll help you create a healthy meal plan! First, let me log into your Picnic account...
+```
+
+**Quick Shopping**:
+
+```
+User: "I need ingredients for pasta carbonara tonight"
+AI: Let me search for carbonara ingredients on Picnic and add them to your cart...
+```
+
+**Delivery Tracking**:
+
+```
+User: "When is my grocery delivery arriving?"
+AI: Let me check your current deliveries and their status...
+```
+
+## Use Cases
+
+Here are some practical scenarios where MCP Picnic can transform your grocery shopping experience:
+
+### 📖 **Recipe Browsing**
+
+**Scenario**: Picking a 20-minute recipe from the Picnic cookbook and inspecting its ingredients
+
+```
+User: "Show me some quick weeknight recipes from Picnic and pick a chicken one"
+
+AI Actions:
+1. Uses picnic_browse_recipes (no category) to list cookbook highlights and available category page IDs
+2. Uses picnic_browse_recipes with category="20minuten" to fetch all recipes in the 20-minute category
+3. Picks one with chicken from the title and uses picnic_get_recipe for the recipe id
+4. Reads back the ingredients list, pantry items, cooking steps and recipe tips
+5. Optionally uses picnic_save_recipe to save it for later
+```
+
+### 🍽️ **Smart Meal Planning**
+
+**Scenario**: Planning a week's worth of healthy meals for a family of 4
+
+```
+User: "Plan 7 dinners for 4 people, focusing on Mediterranean diet, budget €100"
+
+AI Actions:
+1. Uses picnic_search to find Mediterranean ingredients
+2. Uses picnic_get_suggestions for recipe ideas
+3. Uses picnic_add_to_cart to build shopping list
+4. Uses picnic_get_cart to verify total cost
+5. Uses picnic_get_delivery_slots to schedule delivery
+```
+
+### 🛒 **Intelligent Shopping Assistant**
+
+**Scenario**: Recreating a specific recipe with dietary substitutions
+
+```
+User: "I want to make lasagna but need gluten-free and dairy-free alternatives"
+
+AI Actions:
+1. Uses picnic_search to find gluten-free pasta
+2. Uses picnic_get_suggestions for dairy-free cheese alternatives
+3. Uses picnic_get_product_details to check ingredient details
+4. Uses picnic_add_to_cart to add suitable products
+5. Provides cooking tips and substitution ratios
+```
+
+### 📦 **Delivery Optimization**
+
+**Scenario**: Managing multiple deliveries and tracking orders
+
+```
+User: "What's the status of all my orders and when will they arrive?"
+
+AI Actions:
+1. Uses picnic_get_deliveries to list all current orders
+2. Uses picnic_get_delivery_position for real-time tracking
+3. Uses picnic_get_delivery_scenario for driver details
+4. Suggests optimal delivery slots using picnic_get_delivery_slots
+5. Sends invoice emails using picnic_send_delivery_invoice_email
+```
+
+### 💰 **Budget-Conscious Shopping**
+
+**Scenario**: Shopping within a strict budget while maintaining quality
+
+```
+User: "I have €50 for groceries this week, help me maximize value"
+
+AI Actions:
+1. Uses picnic_search to find budget-friendly staples
+2. Uses picnic_get_product_details to inspect prices, package sizes, and promotions
+3. Uses picnic_get_cart to track running total
+4. Uses picnic_remove_from_cart if budget exceeded
+5. Uses picnic_get_wallet_transactions to track spending patterns
+```
+
+### 🏠 **Household Management**
+
+**Scenario**: Managing shopping lists for different family members
+
+```
+User: "Create separate shopping lists for weekly groceries and party supplies"
+
+AI Actions:
+1. Uses picnic_search to find weekly grocery staples
+2. Uses picnic_search to find party-specific items
+3. Uses picnic_get_product_details to check pack sizes and ingredients
+4. Uses picnic_add_to_cart when ready to order
+5. Uses picnic_get_cart to review totals before checkout
+```
+
+### 🎉 **Event Planning**
+
+**Scenario**: Planning a dinner party for 12 guests
+
+```
+User: "I'm hosting a dinner party for 12 people next Saturday, help me plan"
+
+AI Actions:
+1. Uses picnic_search to find appetizer, main course, and dessert ingredients
+2. Uses picnic_get_suggestions for wine pairings
+3. Uses picnic_get_delivery_slots to schedule Friday delivery
+4. Uses picnic_set_delivery_slot to book optimal time
+5. Uses picnic_get_product_details to check product availability and sizes
+```
+
+### 🥗 **Health & Dietary Management**
+
+**Scenario**: Managing specific dietary requirements (diabetes, allergies)
+
+```
+User: "Find low-carb options for a diabetic-friendly weekly menu"
+
+AI Actions:
+1. Uses picnic_search with specific dietary keywords
+2. Uses picnic_get_product_details to check nutritional information
+3. Uses picnic_get_suggestions for healthy alternatives
+4. Uses picnic_add_to_cart for approved items only
+5. Tracks nutritional goals across multiple meals
+```
+
+### 📱 **Smart Reordering**
+
+**Scenario**: Automatically reordering household essentials
+
+```
+User: "Reorder my usual weekly essentials and add some new seasonal items"
+
+AI Actions:
+1. Uses picnic_get_user_details to check purchase history
+2. Uses picnic_get_wallet_transactions to identify regular purchases
+3. Uses picnic_search to find seasonal products
+4. Uses picnic_add_to_cart for both regular and new items
+5. Uses picnic_get_delivery_slots for convenient scheduling
+```
+
+### 🎯 **Price Comparison & Optimization**
+
+**Scenario**: Finding the best value products across categories
+
+```
+User: "Compare prices for organic vs conventional produce this week"
+
+AI Actions:
+1. Uses picnic_search for both organic and conventional items
+2. Uses picnic_get_product_details to compare prices and sizes
+3. Uses picnic_get_suggestions for similar brands and products
+4. Uses picnic_get_cart to compare basket totals
+5. Provides detailed cost analysis and recommendations
+```
+
+### 🚚 **Delivery Experience Management**
+
+**Scenario**: Optimizing delivery experience and providing feedback
+
+```
+User: "Track my delivery and rate the service quality"
+
+AI Actions:
+1. Uses picnic_get_delivery_position for real-time tracking
+2. Uses picnic_get_delivery_scenario for driver communication
+3. Uses picnic_rate_delivery after completion
+4. Uses picnic_send_delivery_invoice_email for records
+5. Uses picnic_get_order_status to confirm final order state
+```
+
+### 💳 **Financial Tracking**
+
+**Scenario**: Managing grocery budget and payment methods
+
+```
+User: "Show me my grocery spending patterns and optimize my payment setup"
+
+AI Actions:
+1. Uses picnic_get_wallet_transactions for spending analysis
+2. Uses picnic_get_wallet_transaction_details for detailed breakdowns
+3. Uses picnic_get_payment_profile to review payment methods
+4. Provides insights on spending trends and budget optimization
+5. Suggests cost-saving strategies based on purchase history
+```
+
+These use cases demonstrate how MCP Picnic transforms simple grocery shopping into an intelligent, personalized experience that saves time, money, and effort while ensuring you never miss essential items or optimal deals.
+
+## Setup Instructions
+
+### Option 1: Install from NPM (Recommended)
+
+```bash
+# Install globally
+npm install -g mcp-picnic
+
+# Or install locally in your project
+npm install mcp-picnic
+```
+
+### Option 2: Build from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/ivo-toby/mcp-picnic.git
+cd mcp-picnic
+
+# Install dependencies
+npm install
+
+# Build the project
+npm run build
+
+# Link globally (optional)
+npm link
+```
+
+### Option 3: Docker / Docker Compose
+
+```bash
+# 1) Create .env with your Picnic credentials
+cat > .env <<EOF
+PICNIC_USERNAME=your-picnic-email@example.com
+PICNIC_PASSWORD=your-picnic-password
+PICNIC_COUNTRY_CODE=NL
+EOF
+
+# 2) Build and start
+docker compose up -d --build
+
+# 3) Check health
+docker compose ps
+curl http://localhost:3000/health
+```
+
+Notes:
+- The container runs as a non-root user (UID `1638`).
+- Session persistence is configured via volume `picnic-data` mapped to `/app/data`.
+- `PICNIC_SESSION_FILE` defaults to `/app/data/picnic-session.json` in the container.
+- `PICNIC_DEVICE_FILE` defaults to `/app/data/picnic-device.json` in the container, so a generated device id is persisted on the same volume and reused across restarts.
+
+### Configuration
+
+The server supports both stdio and HTTP transports:
+
+**Stdio Transport (Default)**:
+
+```bash
+mcp-picnic
+```
+
+**HTTP Transport**:
+
+```bash
+mcp-picnic --enable-http --http-port 3000
+```
+
+### Environment Variables
+
+You can configure the server using environment variables:
+
+```bash
+# Required: Picnic Account Credentials
+PICNIC_USERNAME=your-picnic-email@example.com
+PICNIC_PASSWORD=your-picnic-password
+
+# Country Configuration (optional, defaults to NL)
+# Set this to match your Picnic account's country
+# Supported values: NL (Netherlands), DE (Germany), FR (France)
+PICNIC_COUNTRY_CODE=NL
+
+# HTTP Transport settings (optional)
+ENABLE_HTTP_SERVER=true
+HTTP_PORT=3000
+# Default is localhost. Use 0.0.0.0 for Docker/external access.
+HTTP_HOST=0.0.0.0
+# Optional: protect HTTP endpoints with a shared token
+HTTP_AUTH_TOKEN=replace-with-a-long-random-token
+# Optional: HTTP header name to accept token auth (default: x-mcp-token)
+HTTP_AUTH_HEADER_NAME=x-mcp-token
+
+# Session persistence (optional, strongly recommended in containers)
+PICNIC_SESSION_FILE=~/.picnic-session.json
+
+# Picnic API settings (optional)
+PICNIC_API_VERSION=15
+
+# Device identity sent to the Picnic API (optional)
+# Defaults are provided by the picnic-api library; override these only if
+# Picnic starts rejecting requests (e.g. 2FA codes not arriving) before the
+# library ships updated defaults.
+PICNIC_DEVICE_ID=3C417201548B2E3B
+PICNIC_AGENT="30100;1.228.1-15480;"
+```
+
+#### Country Configuration
+
+The `PICNIC_COUNTRY_CODE` setting determines which Picnic regional API to connect to. This **must match your Picnic account's country** for authentication to work correctly.
+
+- **Default**: `NL` (Netherlands)
+- **Supported values**:
+  - `NL` - Netherlands (🇳🇱)
+  - `DE` - Germany (🇩🇪)
+  - `FR` - France (🇫🇷)
+
+**When to set this:**
+- If your Picnic account is registered in Germany, you **must** set `PICNIC_COUNTRY_CODE=DE`
+- If your Picnic account is registered in France, you **must** set `PICNIC_COUNTRY_CODE=FR`
+- If your Picnic account is in the Netherlands, you can omit this setting (defaults to `NL`)
+
+**Example for German accounts:**
+```bash
+PICNIC_USERNAME=your-email@example.com
+PICNIC_PASSWORD=your-password
+PICNIC_COUNTRY_CODE=DE
+```
+
+#### HTTP Token Authentication
+
+When `HTTP_AUTH_TOKEN` is set, all HTTP endpoints except `/health` require authentication. You can authenticate with either:
+
+- Custom HTTP header token: `<HTTP_AUTH_HEADER_NAME>: YOUR_TOKEN` (defaults to `x-mcp-token`)
+- Authorization header bearer token: `Authorization: Bearer YOUR_TOKEN`
+
+Example requests:
+
+```bash
+curl -H "x-mcp-token: YOUR_TOKEN" "http://localhost:3000/mcp"
+curl -H "Authorization: Bearer YOUR_TOKEN" "http://localhost:3000/sessions"
+```
+
+If the token is missing or invalid, the server responds with `401 Unauthorized`.
+
+### MCP Client Configuration
+
+#### Claude Desktop
+
+**Configuration File Locations:**
+
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+**Configuration:**
+
+```json
+{
+  "mcpServers": {
+    "picnic": {
+      "command": "npx",
+      "args": ["-y", "mcp-picnic"],
+      "env": {
+        "PICNIC_USERNAME": "your-picnic-email@example.com",
+        "PICNIC_PASSWORD": "your-picnic-password",
+        "PICNIC_COUNTRY_CODE": "NL"
+      }
+    }
+  }
+}
+```
+
+**Important**:
+- Replace the placeholder credentials with your actual Picnic account details
+- Set `PICNIC_COUNTRY_CODE` to `"DE"` for Germany, `"FR"` for France, or `"NL"` for the Netherlands (default)
+
+**Setup Steps:**
+
+1. Open Claude Desktop
+2. Go to Claude menu → Settings (not the in-app settings)
+3. Click "Developer" in the left sidebar
+4. Click "Edit Config" to open the configuration file
+5. Add the configuration above
+6. Save the file and restart Claude Desktop
+7. Look for the 🔨 hammer icon in the input area
+
+#### Continue (VS Code)
+
+Add to your Continue configuration:
+
+```json
+{
+  "mcpServers": [
+    {
+      "name": "picnic",
+      "command": "npx",
+      "args": ["-y", "mcp-picnic"],
+      "env": {
+        "PICNIC_USERNAME": "your-picnic-email@example.com",
+        "PICNIC_PASSWORD": "your-picnic-password",
+        "PICNIC_COUNTRY_CODE": "NL"
+      }
+    }
+  ]
+}
+```
+
+**Note**: Set `PICNIC_COUNTRY_CODE` to `"DE"` for Germany or `"FR"` for France. Netherlands accounts can omit this field (defaults to `"NL"`).
+
+## Authentication
+
+The server uses the credentials configured in your environment variables:
+
+1. **Required**: Set `PICNIC_USERNAME` and `PICNIC_PASSWORD` in your MCP configuration
+2. **Session Persistence**: After successful authentication, your session is saved to `~/.picnic-session.json` and reused across restarts. You can customize this path with the `PICNIC_SESSION_FILE` environment variable.
+
+### Two-Factor Authentication (2FA)
+
+If your Picnic account has 2FA enabled, complete the verification flow using MCP tools:
+
+1. Call `picnic_generate_2fa_code` to send a verification code (usually SMS).
+2. Call `picnic_verify_2fa_code` with the received OTP code.
+
+> Important: In Docker, the server itself cannot "chat" or type the code for you. Your MCP client (Claude Desktop, Continue, etc.) must trigger these tools.
+
+To avoid repeated 2FA challenges and container restart loops, persist `PICNIC_SESSION_FILE` to a Docker volume.
+When 2FA is pending, the server stays up so your client can complete `picnic_generate_2fa_code` and `picnic_verify_2fa_code`.
+
+**Security Note**: Credentials are used only for Picnic API authentication. The session token is stored locally at `PICNIC_SESSION_FILE`; the password is never stored on disk.
+
+## Available Tools
+
+The server provides comprehensive access to Picnic's functionality through 30+ specialized tools:
+
+### Authentication & Account Management
+
+- **`picnic_generate_2fa_code`** - Generate 2FA verification code (SMS/other channels)
+- **`picnic_verify_2fa_code`** - Verify 2FA code for authentication
+- **`picnic_get_user_details`** - Get current user profile information
+- **`picnic_get_user_info`** - Get user information including feature toggles
+
+**Note**: Authentication is handled automatically using credentials from environment variables (`PICNIC_USERNAME` and `PICNIC_PASSWORD`). No manual login is required.
+
+### Product Discovery & Search
+
+- **`picnic_search`** - Search for products by name or keywords
+- **`picnic_get_promotions`** - Get current weekly promotions/deals with prices and labels
+- **`picnic_get_suggestions`** - Get product suggestions based on query
+- **`picnic_get_product_details`** - Get detailed information about a specific product
+- **`picnic_get_image`** - Get product images in various sizes (tiny to extra-large)
+
+**Note**: `picnic_get_categories` is not available. The underlying `picnic-api` package removed `getCategories()` in v4; category browsing would need a new Fusion page implementation.
+
+### Recipe & Meal Planning
+
+- **`picnic_browse_recipes`** - Browse Picnic recipes, including category page IDs and category-specific listings
+- **`picnic_get_recipe`** - Get details for a specific recipe
+- **`picnic_get_recipe_ingredients`** - Extract recipe ingredients
+- **`picnic_get_multiple_recipe_ingredients`** - Extract ingredients from multiple recipes
+- **`picnic_build_shopping_list`** - Build a consolidated shopping list
+- **`picnic_find_meal_combinations`** - Find meal combinations within constraints
+- **`picnic_add_recipe_to_cart`** - Add recipe ingredients to the cart
+- **`picnic_remove_recipe_from_cart`** - Remove recipe ingredients from the cart
+- **`picnic_get_saved_recipes`** - Get saved recipes
+- **`picnic_get_own_recipes`** - Get user-created recipes
+- **`picnic_save_recipe`** - Save a recipe
+- **`picnic_unsave_recipe`** - Remove a saved recipe
+
+### Shopping Cart Management
+
+- **`picnic_get_cart`** - View current shopping cart contents and totals
+- **`picnic_add_to_cart`** - Add products to cart with specified quantities
+- **`picnic_remove_from_cart`** - Remove products from cart with specified quantities
+- **`picnic_clear_cart`** - Clear all items from the shopping cart
+
+### Delivery & Order Management
+
+- **`picnic_get_delivery_slots`** - View available delivery time slots
+- **`picnic_set_delivery_slot`** - Select and book a delivery time slot
+- **`picnic_get_deliveries`** - Get list of past and current deliveries with filters
+- **`picnic_get_delivery`** - Get detailed information about a specific delivery
+- **`picnic_get_delivery_position`** - Track real-time driver location and ETA
+- **`picnic_get_delivery_scenario`** - Get driver and route information
+- **`picnic_cancel_delivery`** - Cancel a scheduled delivery
+- **`picnic_rate_delivery`** - Rate completed deliveries (0-10 scale)
+- **`picnic_send_delivery_invoice_email`** - Send/resend delivery invoice emails
+- **`picnic_get_order_status`** - Check status of specific orders
+
+### Payment & Financial
+
+- **`picnic_get_payment_profile`** - View payment methods and billing information
+- **`picnic_get_wallet_transactions`** - Get wallet transaction history (paginated)
+- **`picnic_get_wallet_transaction_details`** - Get detailed transaction information
+
+## Development
+
+### Running in Development Mode
+
+```bash
+# Clone and setup
+git clone https://github.com/ivo-toby/mcp-picnic.git
+cd mcp-picnic
+npm install
+
+# Development with hot reload
+npm run dev
+
+# Run tests
+npm test
+
+# Type checking
+npm run typecheck
+
+# Linting
+npm run lint
+```
+
+### Project Structure
+
+```
+src/
+├── index.ts              # Main server entry point
+├── config.ts             # Configuration management
+├── tools/                # Picnic API tool implementations
+├── prompts/              # AI prompt templates
+├── resources/            # Resource definitions
+├── handlers/             # Request handlers
+├── transports/           # Transport layer (stdio/HTTP)
+└── utils/                # Utility functions
+```
+
+## Contributing
+
+We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for details.
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Support
+
+- 📖 [Documentation](https://github.com/ivo-toby/mcp-picnic/wiki)
+- 🐛 [Report Issues](https://github.com/ivo-toby/mcp-picnic/issues)
+- 💬 [Discussions](https://github.com/ivo-toby/mcp-picnic/discussions)
+
+---
+
+# MCP Picnic - AI-Gestuurde Boodschappen Assistent (Nederlands)
+
+Een intelligente Model Context Protocol (MCP) server die AI-assistenten in staat stelt om te communiceren met Picnic, de online supermarkt bezorgservice. Deze server transformeert je AI-assistent in een slimme boodschappen-companion die je kan helpen met maaltijdplanning, het beheren van je winkelwagen, het volgen van leveringen, en het optimaliseren van je boodschappen-ervaring.
+
+## Wat is MCP Picnic?
+
+MCP Picnic is een brug tussen AI-assistenten (zoals Claude, ChatGPT, of andere MCP-compatibele tools) en Picnic's bezorgservice voor boodschappen. Het biedt:
+
+- **🛒 Slim Winkelen**: Zoek producten, beheer je winkelwagen, en plaats bestellingen via natuurlijke conversatie
+- **🍽️ Maaltijdplanning**: Krijg AI-gestuurde maaltijdplannen met automatische boodschappenlijst generatie
+- **💰 Budget Beheer**: Shop binnen je budget met kostenefficiënte aanbevelingen
+- **🚚 Bezorging Volgen**: Monitor je bestellingen en optimaliseer bezorgschema's
+- **🥗 Dieet Ondersteuning**: Vind producten die passen bij je dieetbeperkingen en gezondheidsdoelen
+- **📱 Volledige Integratie**: Toegang tot alle Picnic functies via je AI-assistent
+
+### Ondersteunde Landen
+
+- 🇳🇱 Nederland
+- 🇩🇪 Duitsland
+
+## Belangrijkste Functies
+
+### 🤖 AI-Gestuurde Winkel Tools
+
+- **Product Zoeken**: Vind elk product in Picnic's catalogus
+- **Winkelwagen Beheer**: Voeg toe, verwijder, en wijzig items in je winkelwagen
+- **Bestelling Volgen**: Monitor bezorgstatus en chauffeur locatie
+- **Account Beheer**: Toegang tot je profiel, betaalmethoden, en bestelgeschiedenis
+
+### 🎯 Intelligente Prompts
+
+- **Maaltijdplanner**: Creëer wekelijkse maaltijdplannen met automatische boodschappenlijsten
+- **Budget Winkelen**: Blijf binnen budget terwijl je kwaliteit behoudt
+- **Snelle Diners**: Vind snelle maaltijdoplossingen voor drukke schema's
+- **Gezond Eten**: Krijg voeding-gerichte productaanbevelingen
+- **Speciale Gelegenheden**: Plan voor feesten, vakanties, en bijeenkomsten
+- **Voorraadkast Aanvullen**: Onderhoud essentiële huishoudelijke benodigdheden
+- **Recept Recreatie**: Vind ingrediënten voor specifieke recepten
+- **Dieet Vervangingen**: Krijg alternatieven voor dieetbeperkingen
+
+## Hoe te Gebruiken
+
+### Vereisten
+
+- Een Picnic account (beschikbaar in Nederland of Duitsland)
+- Een MCP-compatibele AI-assistent (Claude Desktop, Continue, etc.)
+- Node.js 18+ geïnstalleerd op je systeem
+
+### Snelle Start
+
+1. **Installeer de server**:
+
+```bash
+npm install -g mcp-picnic
+```
+
+2. **Configureer Claude Desktop** om de MCP server te gebruiken:
+
+**macOS**: Bewerk `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: Bewerk `%APPDATA%\Claude\claude_desktop_config.json`
+
+Voeg deze configuratie toe:
+
+```json
+{
+  "mcpServers": {
+    "picnic": {
+      "command": "npx",
+      "args": ["-y", "mcp-picnic"],
+      "env": {
+        "PICNIC_USERNAME": "jouw-picnic-email@example.com",
+        "PICNIC_PASSWORD": "jouw-picnic-wachtwoord",
+        "PICNIC_COUNTRY_CODE": "NL"
+      }
+    }
+  }
+}
+```
+
+**Belangrijk**:
+- Vervang `jouw-picnic-email@example.com` en `jouw-picnic-wachtwoord` met je echte Picnic account gegevens.
+- Stel `PICNIC_COUNTRY_CODE` in op `"DE"` als je Picnic account in Duitsland geregistreerd is. Voor Nederlandse accounts kun je dit veld weglaten of instellen op `"NL"`.
+
+3. **Herstart Claude Desktop** volledig
+
+4. **Begin met gebruiken** - je zou een 🔨 hamer icoon moeten zien in het invoerveld:
+
+```
+"Ik wil maaltijden plannen voor deze week en boodschappen bestellen bij Picnic"
+```
+
+## Setup Instructies
+
+### Optie 1: Installeer van NPM (Aanbevolen)
+
+```bash
+# Installeer globaal
+npm install -g mcp-picnic
+
+# Of installeer lokaal in je project
+npm install mcp-picnic
+```
+
+### Optie 2: Bouw van Bron
+
+```bash
+# Kloon de repository
+git clone https://github.com/ivo-toby/mcp-picnic.git
+cd mcp-picnic
+
+# Installeer dependencies
+npm install
+
+# Bouw het project
+npm run build
+
+# Link globaal (optioneel)
+npm link
+```
+
+## Authenticatie
+
+De server gebruikt de inloggegevens die geconfigureerd zijn in je omgevingsvariabelen:
+
+1. **Vereist**: Stel `PICNIC_USERNAME` en `PICNIC_PASSWORD` in je MCP configuratie in
+2. **Sessie opslag**: Na succesvolle authenticatie wordt je sessie opgeslagen in `~/.picnic-session.json` en hergebruikt bij herstarts. Je kunt dit pad aanpassen met de `PICNIC_SESSION_FILE` omgevingsvariabele.
+
+### Tweefactorauthenticatie (2FA)
+
+Als je Picnic-account 2FA heeft ingeschakeld, moet je de verificatie voltooien voordat je de winkeltools kunt gebruiken. Vraag bij je eerste gesprek na het starten van de server aan de AI-assistent om:
+
+1. **Een 2FA-code te genereren**: De assistent roept `picnic_generate_2fa_code` aan om een verificatiecode via SMS naar je telefoon te sturen
+2. **De code in te voeren**: Vertel de assistent de code die je hebt ontvangen, en deze roept `picnic_verify_2fa_code` aan om de authenticatie te voltooien
+
+Zodra 2FA is geverifieerd, wordt je sessie opgeslagen en hoef je deze stap niet te herhalen totdat de sessie verloopt.
+
+**Voorbeeld**:
+```
+Gebruiker: "Ik moet mijn Picnic account verifiëren"
+AI: Ik genereer een 2FA-code voor je... Er is een code naar je telefoon gestuurd via SMS.
+Gebruiker: "De code is 123456"
+AI: Je 2FA-code is geverifieerd. Je bent nu volledig geauthenticeerd en kunt beginnen met winkelen!
+```
+
+**Beveiligingsnotitie**: Je inloggegevens worden alleen gebruikt om te authenticeren met Picnic's API. Het sessietoken wordt lokaal opgeslagen in `~/.picnic-session.json`. Je wachtwoord wordt nooit op schijf opgeslagen.
+
+## Gebruiksscenario's
+
+Hier zijn enkele praktische scenario's waarin MCP Picnic je boodschappen-ervaring kan transformeren:
+
+### 📖 **Recepten Bladeren**
+
+**Scenario**: Een recept van 20 minuten kiezen uit het Picnic-kookboek en de ingrediënten bekijken
+
+```
+Gebruiker: "Laat me snelle doordeweekse recepten zien van Picnic en kies een kiprecept"
+
+AI Acties:
+1. Gebruikt picnic_browse_recipes (zonder categorie) om de kookboek-highlights en beschikbare categoriepagina's op te halen
+2. Gebruikt picnic_browse_recipes met category="20minuten" om alle recepten in die categorie te tonen
+3. Kiest er een met kip in de titel en gebruikt picnic_get_recipe met het recipe id
+4. Geeft de ingrediëntenlijst, voorraadkast-spullen, bereidingsstappen en recepttips terug
+5. Slaat het recept eventueel op met picnic_save_recipe
+```
+
+### 🍽️ **Slimme Maaltijdplanning**
+
+**Scenario**: Een week vol gezonde maaltijden plannen voor een gezin van 4
+
+```
+Gebruiker: "Plan 7 avondmaaltijden voor 4 personen, focus op mediterraan dieet, budget €100"
+
+AI Acties:
+1. Gebruikt picnic_search om mediterrane ingrediënten te vinden
+2. Gebruikt picnic_get_suggestions voor recept ideeën
+3. Gebruikt picnic_add_to_cart om boodschappenlijst op te bouwen
+4. Gebruikt picnic_get_cart om totale kosten te verifiëren
+5. Gebruikt picnic_get_delivery_slots om bezorging in te plannen
+```
+
+### 🛒 **Intelligente Boodschappen Assistent**
+
+**Scenario**: Een specifiek recept recreëren met dieet vervangingen
+
+```
+Gebruiker: "Ik wil lasagne maken maar heb glutenvrije en zuivelvrije alternatieven nodig"
+
+AI Acties:
+1. Gebruikt picnic_search om glutenvrije pasta te vinden
+2. Gebruikt picnic_get_suggestions voor zuivelvrije kaas alternatieven
+3. Gebruikt picnic_get_product_details om ingrediënt details te controleren
+4. Gebruikt picnic_add_to_cart om geschikte producten toe te voegen
+5. Geeft kooktips en vervangingsverhoudingen
+```
+
+### 📦 **Bezorging Optimalisatie**
+
+**Scenario**: Meerdere bezorgingen beheren en bestellingen volgen
+
+```
+Gebruiker: "Wat is de status van al mijn bestellingen en wanneer komen ze aan?"
+
+AI Acties:
+1. Gebruikt picnic_get_deliveries om alle huidige bestellingen te tonen
+2. Gebruikt picnic_get_delivery_position voor real-time tracking
+3. Gebruikt picnic_get_delivery_scenario voor chauffeur details
+4. Stelt optimale bezorgtijden voor met picnic_get_delivery_slots
+5. Verstuurt factuur emails met picnic_send_delivery_invoice_email
+```
+
+### 💰 **Budget-Bewust Winkelen**
+
+**Scenario**: Winkelen binnen een strikt budget terwijl kwaliteit behouden blijft
+
+```
+Gebruiker: "Ik heb €50 voor boodschappen deze week, help me de waarde te maximaliseren"
+
+AI Acties:
+1. Gebruikt picnic_search om budget-vriendelijke basisproducten te vinden
+2. Gebruikt picnic_get_product_details om prijzen, verpakkingsmaten en promoties te controleren
+3. Gebruikt picnic_get_cart om lopend totaal bij te houden
+4. Gebruikt picnic_remove_from_cart als budget overschreden wordt
+5. Gebruikt picnic_get_wallet_transactions om uitgavenpatronen te volgen
+```
+
+### 🏠 **Huishouden Beheer**
+
+**Scenario**: Boodschappenlijsten beheren voor verschillende gezinsleden
+
+```
+Gebruiker: "Maak aparte boodschappenlijsten voor wekelijkse boodschappen en feestbenodigdheden"
+
+AI Acties:
+1. Gebruikt picnic_search om wekelijkse basisboodschappen te vinden
+2. Gebruikt picnic_search om feest-specifieke items te vinden
+3. Gebruikt picnic_get_product_details om verpakkingsmaten en ingrediënten te controleren
+4. Gebruikt picnic_add_to_cart wanneer klaar om te bestellen
+5. Gebruikt picnic_get_cart om totalen voor het afrekenen te controleren
+```
+
+### 🎉 **Evenement Planning**
+
+**Scenario**: Een dinerfeest plannen voor 12 gasten
+
+```
+Gebruiker: "Ik organiseer een dinerfeest voor 12 personen aanstaande zaterdag, help me plannen"
+
+AI Acties:
+1. Gebruikt picnic_search om voorgerechten, hoofdgerechten en dessert ingrediënten te vinden
+2. Gebruikt picnic_get_suggestions voor wijn combinaties
+3. Gebruikt picnic_get_delivery_slots om vrijdag bezorging in te plannen
+4. Gebruikt picnic_set_delivery_slot om optimale tijd te boeken
+5. Gebruikt picnic_get_product_details om product beschikbaarheid en maten te controleren
+```
+
+### 🥗 **Gezondheid & Dieet Beheer**
+
+**Scenario**: Specifieke dieetvereisten beheren (diabetes, allergieën)
+
+```
+Gebruiker: "Vind koolhydraatarme opties voor een diabetesvriendelijk weekmenu"
+
+AI Acties:
+1. Gebruikt picnic_search met specifieke dieet zoekwoorden
+2. Gebruikt picnic_get_product_details om voedingswaarde informatie te controleren
+3. Gebruikt picnic_get_suggestions voor gezonde alternatieven
+4. Gebruikt picnic_add_to_cart alleen voor goedgekeurde items
+5. Volgt voedingsdoelen over meerdere maaltijden
+```
+
+### 📱 **Slimme Herbestelling**
+
+**Scenario**: Automatisch herbestellen van huishoudelijke essentials
+
+```
+Gebruiker: "Bestel mijn gebruikelijke wekelijkse essentials opnieuw en voeg wat nieuwe seizoensproducten toe"
+
+AI Acties:
+1. Gebruikt picnic_get_user_details om aankoopgeschiedenis te controleren
+2. Gebruikt picnic_get_wallet_transactions om reguliere aankopen te identificeren
+3. Gebruikt picnic_search om seizoensproducten te vinden
+4. Gebruikt picnic_add_to_cart voor zowel reguliere als nieuwe items
+5. Gebruikt picnic_get_delivery_slots voor handige planning
+```
+
+### 🎯 **Prijsvergelijking & Optimalisatie**
+
+**Scenario**: De beste waarde producten vinden in verschillende categorieën
+
+```
+Gebruiker: "Vergelijk prijzen voor biologische vs conventionele groenten deze week"
+
+AI Acties:
+1. Gebruikt picnic_search voor zowel biologische als conventionele items
+2. Gebruikt picnic_get_product_details om prijzen en maten te vergelijken
+3. Gebruikt picnic_get_suggestions voor vergelijkbare merken en producten
+4. Gebruikt picnic_get_cart om mandtotalen te vergelijken
+5. Geeft gedetailleerde kostenanalyse en aanbevelingen
+```
+
+### 🚚 **Bezorgervaring Beheer**
+
+**Scenario**: Bezorgervaring optimaliseren en feedback geven
+
+```
+Gebruiker: "Volg mijn bezorging en beoordeel de servicekwaliteit"
+
+AI Acties:
+1. Gebruikt picnic_get_delivery_position voor real-time tracking
+2. Gebruikt picnic_get_delivery_scenario voor chauffeur communicatie
+3. Gebruikt picnic_rate_delivery na voltooiing
+4. Gebruikt picnic_send_delivery_invoice_email voor administratie
+5. Gebruikt picnic_get_order_status om de uiteindelijke bestelstatus te bevestigen
+```
+
+### 💳 **Financiële Tracking**
+
+**Scenario**: Boodschappenbudget beheren en betalingsmethoden optimaliseren
+
+```
+Gebruiker: "Toon me mijn boodschappen uitgavenpatronen en optimaliseer mijn betalingsinstellingen"
+
+AI Acties:
+1. Gebruikt picnic_get_wallet_transactions voor uitgavenanalyse
+2. Gebruikt picnic_get_wallet_transaction_details voor gedetailleerde uitsplitsingen
+3. Gebruikt picnic_get_payment_profile om betalingsmethoden te bekijken
+4. Geeft inzichten over uitgaventrends en budget optimalisatie
+5. Stelt kostenbesparende strategieën voor gebaseerd op aankoopgeschiedenis
+```
+
+Deze gebruiksscenario's tonen hoe MCP Picnic eenvoudige boodschappen doen transformeert in een intelligente, gepersonaliseerde ervaring die tijd, geld en moeite bespaart terwijl je nooit essentiële items of optimale aanbiedingen mist.
+
+---
+
+# MCP Picnic - KI-Gesteuerte Lebensmittel-Einkaufsassistent (Deutsch)
+
+Ein intelligenter Model Context Protocol (MCP) Server, der KI-Assistenten ermöglicht, mit Picnic, dem Online-Supermarkt-Lieferservice, zu interagieren. Dieser Server verwandelt Ihren KI-Assistenten in einen intelligenten Einkaufsbegleiter, der Ihnen bei der Mahlzeitenplanung, der Verwaltung Ihres Einkaufswagens, der Verfolgung von Lieferungen und der Optimierung Ihres Einkaufserlebnisses helfen kann.
+
+## Was ist MCP Picnic?
+
+MCP Picnic ist eine Brücke zwischen KI-Assistenten (wie Claude, ChatGPT oder anderen MCP-kompatiblen Tools) und Picnics Lebensmittel-Lieferservice. Es bietet:
+
+- **🛒 Intelligentes Einkaufen**: Suchen Sie Produkte, verwalten Sie Ihren Warenkorb und geben Sie Bestellungen über natürliche Unterhaltung auf
+- **🍽️ Mahlzeitenplanung**: Erhalten Sie KI-gesteuerte Mahlzeitenpläne mit automatischer Einkaufslistenerstellung
+- **💰 Budget-Management**: Kaufen Sie innerhalb Ihres Budgets mit kostenbewussten Empfehlungen ein
+- **🚚 Lieferverfolgung**: Überwachen Sie Ihre Bestellungen und optimieren Sie Lieferpläne
+- **🥗 Diät-Unterstützung**: Finden Sie Produkte, die zu Ihren Ernährungseinschränkungen und Gesundheitszielen passen
+- **📱 Vollständige Integration**: Zugriff auf alle Picnic-Funktionen über Ihren KI-Assistenten
+
+### Unterstützte Länder
+
+- 🇳🇱 Niederlande
+- 🇩🇪 Deutschland
+
+## Hauptfunktionen
+
+### 🤖 KI-Gesteuerte Einkaufs-Tools
+
+- **Produktsuche**: Finden Sie jedes Produkt in Picnics Katalog
+- **Warenkorbverwaltung**: Hinzufügen, entfernen und ändern Sie Artikel in Ihrem Warenkorb
+- **Bestellverfolgung**: Überwachen Sie Lieferstatus und Fahrerstandort
+- **Kontoverwaltung**: Zugriff auf Ihr Profil, Zahlungsmethoden und Bestellhistorie
+
+### 🎯 Intelligente Prompts
+
+- **Mahlzeitenplaner**: Erstellen Sie wöchentliche Mahlzeitenpläne mit automatischen Einkaufslisten
+- **Budget-Einkauf**: Bleiben Sie im Budget und behalten dabei die Qualität bei
+- **Schnelle Abendessen**: Finden Sie schnelle Mahlzeitenlösungen für geschäftige Zeitpläne
+- **Gesunde Ernährung**: Erhalten Sie ernährungsorientierte Produktempfehlungen
+- **Besondere Anlässe**: Planen Sie für Partys, Feiertage und Versammlungen
+- **Vorratskammer-Auffüllung**: Pflegen Sie wesentliche Haushaltsvorräte
+- **Rezept-Nachstellung**: Finden Sie Zutaten für spezifische Rezepte
+- **Diät-Ersatz**: Erhalten Sie Alternativen für Ernährungseinschränkungen
+
+## Wie zu Verwenden
+
+### Voraussetzungen
+
+- Ein Picnic-Konto (verfügbar in den Niederlanden oder Deutschland)
+- Ein MCP-kompatibler KI-Assistent (Claude Desktop, Continue, etc.)
+- Node.js 18+ auf Ihrem System installiert
+
+### Schnellstart
+
+1. **Installieren Sie den Server**:
+
+```bash
+npm install -g mcp-picnic
+```
+
+2. **Konfigurieren Sie Claude Desktop**, um den MCP-Server zu verwenden:
+
+**macOS**: Bearbeiten Sie `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: Bearbeiten Sie `%APPDATA%\Claude\claude_desktop_config.json`
+
+Fügen Sie diese Konfiguration hinzu:
+
+```json
+{
+  "mcpServers": {
+    "picnic": {
+      "command": "npx",
+      "args": ["-y", "mcp-picnic"],
+      "env": {
+        "PICNIC_USERNAME": "ihre-picnic-email@example.com",
+        "PICNIC_PASSWORD": "ihr-picnic-passwort",
+        "PICNIC_COUNTRY_CODE": "DE"
+      }
+    }
+  }
+}
+```
+
+**Wichtig**:
+- Ersetzen Sie `ihre-picnic-email@example.com` und `ihr-picnic-passwort` mit Ihren tatsächlichen Picnic-Kontodaten.
+- Für deutsche Accounts sollte `PICNIC_COUNTRY_CODE` auf `"DE"` gesetzt sein. Für niederländische Accounts setzen Sie es auf `"NL"`.
+
+3. **Starten Sie Claude Desktop** vollständig neu
+
+4. **Beginnen Sie mit der Nutzung** - Sie sollten ein 🔨 Hammer-Symbol im Eingabebereich sehen:
+
+```
+"Ich möchte Mahlzeiten für diese Woche planen und Lebensmittel bei Picnic bestellen"
+```
+
+## Setup-Anweisungen
+
+### Option 1: Von NPM installieren (Empfohlen)
+
+```bash
+# Global installieren
+npm install -g mcp-picnic
+
+# Oder lokal in Ihrem Projekt installieren
+npm install mcp-picnic
+```
+
+### Option 2: Aus Quelle erstellen
+
+```bash
+# Repository klonen
+git clone https://github.com/ivo-toby/mcp-picnic.git
+cd mcp-picnic
+
+# Abhängigkeiten installieren
+npm install
+
+# Projekt erstellen
+npm run build
+
+# Global verknüpfen (optional)
+npm link
+```
+
+## Authentifizierung
+
+Der Server verwendet die in Ihren Umgebungsvariablen konfigurierten Anmeldedaten:
+
+1. **Erforderlich**: Setzen Sie `PICNIC_USERNAME` und `PICNIC_PASSWORD` in Ihrer MCP-Konfiguration
+2. **Sitzungsspeicherung**: Nach erfolgreicher Authentifizierung wird Ihre Sitzung in `~/.picnic-session.json` gespeichert und bei Neustarts wiederverwendet. Sie können diesen Pfad mit der Umgebungsvariablen `PICNIC_SESSION_FILE` anpassen.
+
+### Zwei-Faktor-Authentifizierung (2FA)
+
+Wenn Ihr Picnic-Konto 2FA aktiviert hat, müssen Sie die Verifizierung abschließen, bevor Sie die Einkaufs-Tools verwenden können. Bitten Sie bei Ihrem ersten Gespräch nach dem Start des Servers den KI-Assistenten:
+
+1. **Einen 2FA-Code zu generieren**: Der Assistent ruft `picnic_generate_2fa_code` auf, um einen Verifizierungscode per SMS an Ihr Telefon zu senden
+2. **Den Code einzugeben**: Teilen Sie dem Assistenten den erhaltenen Code mit, und er ruft `picnic_verify_2fa_code` auf, um die Authentifizierung abzuschließen
+
+Sobald die 2FA verifiziert ist, wird Ihre Sitzung gespeichert und Sie müssen diesen Schritt nicht wiederholen, bis die Sitzung abläuft.
+
+**Beispiel**:
+```
+Benutzer: "Ich muss mein Picnic-Konto verifizieren"
+KI: Ich generiere einen 2FA-Code für Sie... Ein Code wurde per SMS an Ihr Telefon gesendet.
+Benutzer: "Der Code ist 123456"
+KI: Ihr 2FA-Code wurde verifiziert. Sie sind jetzt vollständig authentifiziert und können mit dem Einkaufen beginnen!
+```
+
+**Sicherheitshinweis**: Ihre Anmeldedaten werden nur zur Authentifizierung mit Picnics API verwendet. Das Sitzungstoken wird lokal unter `~/.picnic-session.json` gespeichert. Ihr Passwort wird niemals auf der Festplatte gespeichert.
+
+## Anwendungsfälle
+
+Hier sind einige praktische Szenarien, in denen MCP Picnic Ihr Lebensmitteleinkaufserlebnis transformieren kann:
+
+### 📖 **Rezepte Durchstöbern**
+
+**Szenario**: Ein 20-Minuten-Rezept aus dem Picnic-Kochbuch wählen und die Zutaten ansehen
+
+```
+Benutzer: "Zeig mir schnelle Wochentagsrezepte von Picnic und such ein Hähnchengericht aus"
+
+KI-Aktionen:
+1. Verwendet picnic_browse_recipes (ohne Kategorie) für die Kochbuch-Highlights und verfügbaren Kategorie-Seiten
+2. Verwendet picnic_browse_recipes mit category="20minuten" für alle Rezepte dieser Kategorie
+3. Wählt ein Rezept mit Hähnchen im Titel und verwendet picnic_get_recipe mit der recipe id
+4. Liest Zutatenliste, Vorratsgegenstände, Kochschritte und Rezepttipps
+5. Speichert das Rezept optional mit picnic_save_recipe
+```
+
+### 🍽️ **Intelligente Mahlzeitenplanung**
+
+**Szenario**: Eine Woche voller gesunder Mahlzeiten für eine 4-köpfige Familie planen
+
+```
+Benutzer: "Plane 7 Abendessen für 4 Personen, Fokus auf mediterrane Diät, Budget €100"
+
+KI-Aktionen:
+1. Verwendet picnic_search um mediterrane Zutaten zu finden
+2. Verwendet picnic_get_suggestions für Rezeptideen
+3. Verwendet picnic_add_to_cart um Einkaufsliste zu erstellen
+4. Verwendet picnic_get_cart um Gesamtkosten zu überprüfen
+5. Verwendet picnic_get_delivery_slots um Lieferung zu planen
+```
+
+### 🛒 **Intelligenter Einkaufsassistent**
+
+**Szenario**: Ein spezifisches Rezept mit Diät-Ersatzstoffen nachkochen
+
+```
+Benutzer: "Ich möchte Lasagne machen, brauche aber glutenfreie und milchfreie Alternativen"
+
+KI-Aktionen:
+1. Verwendet picnic_search um glutenfreie Pasta zu finden
+2. Verwendet picnic_get_suggestions für milchfreie Käse-Alternativen
+3. Verwendet picnic_get_product_details um Zutatdetails zu prüfen
+4. Verwendet picnic_add_to_cart um geeignete Produkte hinzuzufügen
+5. Gibt Kochtipps und Ersatzverhältnisse
+```
+
+### 📦 **Lieferoptimierung**
+
+**Szenario**: Mehrere Lieferungen verwalten und Bestellungen verfolgen
+
+```
+Benutzer: "Wie ist der Status all meiner Bestellungen und wann kommen sie an?"
+
+KI-Aktionen:
+1. Verwendet picnic_get_deliveries um alle aktuellen Bestellungen anzuzeigen
+2. Verwendet picnic_get_delivery_position für Echtzeit-Tracking
+3. Verwendet picnic_get_delivery_scenario für Fahrerdetails
+4. Schlägt optimale Lieferzeiten mit picnic_get_delivery_slots vor
+5. Sendet Rechnungs-E-Mails mit picnic_send_delivery_invoice_email
+```
+
+### 💰 **Budgetbewusstes Einkaufen**
+
+**Szenario**: Innerhalb eines strengen Budgets einkaufen und dabei Qualität beibehalten
+
+```
+Benutzer: "Ich habe €50 für Lebensmittel diese Woche, hilf mir den Wert zu maximieren"
+
+KI-Aktionen:
+1. Verwendet picnic_search um budgetfreundliche Grundnahrungsmittel zu finden
+2. Verwendet picnic_get_product_details um Preise, Packungsgrößen und Aktionen zu prüfen
+3. Verwendet picnic_get_cart um laufende Gesamtsumme zu verfolgen
+4. Verwendet picnic_remove_from_cart wenn Budget überschritten wird
+5. Verwendet picnic_get_wallet_transactions um Ausgabenmuster zu verfolgen
+```
+
+### 🏠 **Haushaltsmanagement**
+
+**Szenario**: Einkaufslisten für verschiedene Familienmitglieder verwalten
+
+```
+Benutzer: "Erstelle separate Einkaufslisten für wöchentliche Lebensmittel und Partybedarf"
+
+KI-Aktionen:
+1. Verwendet picnic_search um wöchentliche Grundnahrungsmittel zu finden
+2. Verwendet picnic_search um party-spezifische Artikel zu finden
+3. Verwendet picnic_get_product_details um Packungsgrößen und Zutaten zu prüfen
+4. Verwendet picnic_add_to_cart wenn bereit zum Bestellen
+5. Verwendet picnic_get_cart um Gesamtsummen vor dem Checkout zu prüfen
+```
+
+### 🎉 **Veranstaltungsplanung**
+
+**Szenario**: Ein Abendessen für 12 Gäste planen
+
+```
+Benutzer: "Ich veranstalte ein Abendessen für 12 Personen nächsten Samstag, hilf mir planen"
+
+KI-Aktionen:
+1. Verwendet picnic_search um Vorspeisen, Hauptgerichte und Dessert-Zutaten zu finden
+2. Verwendet picnic_get_suggestions für Weinpaarungen
+3. Verwendet picnic_get_delivery_slots um Freitag-Lieferung zu planen
+4. Verwendet picnic_set_delivery_slot um optimale Zeit zu buchen
+5. Verwendet picnic_get_product_details um Produktverfügbarkeit und Größen zu prüfen
+```
+
+### 🥗 **Gesundheits- & Diätmanagement**
+
+**Szenario**: Spezifische Diätanforderungen verwalten (Diabetes, Allergien)
+
+```
+Benutzer: "Finde kohlenhydratarme Optionen für ein diabetikerfreundliches Wochenmenü"
+
+KI-Aktionen:
+1. Verwendet picnic_search mit spezifischen Diät-Suchbegriffen
+2. Verwendet picnic_get_product_details um Nährwertinformationen zu prüfen
+3. Verwendet picnic_get_suggestions für gesunde Alternativen
+4. Verwendet picnic_add_to_cart nur für genehmigte Artikel
+5. Verfolgt Ernährungsziele über mehrere Mahlzeiten
+```
+
+### 📱 **Intelligente Nachbestellung**
+
+**Szenario**: Automatische Nachbestellung von Haushaltsessentials
+
+```
+Benutzer: "Bestelle meine üblichen wöchentlichen Essentials nach und füge neue saisonale Artikel hinzu"
+
+KI-Aktionen:
+1. Verwendet picnic_get_user_details um Kaufhistorie zu prüfen
+2. Verwendet picnic_get_wallet_transactions um regelmäßige Käufe zu identifizieren
+3. Verwendet picnic_search um saisonale Produkte zu finden
+4. Verwendet picnic_add_to_cart für sowohl reguläre als auch neue Artikel
+5. Verwendet picnic_get_delivery_slots für bequeme Planung
+```
+
+### 🎯 **Preisvergleich & Optimierung**
+
+**Szenario**: Die besten Wertprodukte in verschiedenen Kategorien finden
+
+```
+Benutzer: "Vergleiche Preise für Bio- vs. konventionelles Gemüse diese Woche"
+
+KI-Aktionen:
+1. Verwendet picnic_search für sowohl Bio- als auch konventionelle Artikel
+2. Verwendet picnic_get_product_details um Preise und Größen zu vergleichen
+3. Verwendet picnic_get_suggestions für ähnliche Marken und Produkte
+4. Verwendet picnic_get_cart um Warenkorbsummen zu vergleichen
+5. Bietet detaillierte Kostenanalyse und Empfehlungen
+```
+
+### 🚚 **Liefererfahrungsmanagement**
+
+**Szenario**: Liefererfahrung optimieren und Feedback geben
+
+```
+Benutzer: "Verfolge meine Lieferung und bewerte die Servicequalität"
+
+KI-Aktionen:
+1. Verwendet picnic_get_delivery_position für Echtzeit-Tracking
+2. Verwendet picnic_get_delivery_scenario für Fahrerkommunikation
+3. Verwendet picnic_rate_delivery nach Abschluss
+4. Verwendet picnic_send_delivery_invoice_email für Aufzeichnungen
+5. Verwendet picnic_get_order_status um den endgültigen Bestellstatus zu bestätigen
+```
+
+### 💳 **Finanzielle Verfolgung**
+
+**Szenario**: Lebensmittelbudget verwalten und Zahlungsmethoden optimieren
+
+```
+Benutzer: "Zeige mir meine Lebensmittelausgabenmuster und optimiere meine Zahlungseinstellungen"
+
+KI-Aktionen:
+1. Verwendet picnic_get_wallet_transactions für Ausgabenanalyse
+2. Verwendet picnic_get_wallet_transaction_details für detaillierte Aufschlüsselungen
+3. Verwendet picnic_get_payment_profile um Zahlungsmethoden zu überprüfen
+4. Bietet Einblicke in Ausgabentrends und Budgetoptimierung
+5. Schlägt kostensparende Strategien basierend auf Kaufhistorie vor
+```
+
+Diese Anwendungsfälle zeigen, wie MCP Picnic einfaches Lebensmitteleinkaufen in eine intelligente, personalisierte Erfahrung verwandelt, die Zeit, Geld und Aufwand spart und dabei sicherstellt, dass Sie nie wichtige Artikel oder optimale Angebote verpassen.

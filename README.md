@@ -10,8 +10,8 @@ agents, workflows, and Le Chat conversations.
 
 ## Layout
 
-- `apps.json` / `mistral.json` — the app manifest (kept identical for CLI versions that
-  read either filename); one module `picnic` (`type: app`, `serve: server`,
+- `mistral.json` — the app manifest (current CLI versions; older ones used `apps.json`);
+  one module `picnic` (`type: app`, `serve: server`,
   routes `/mcp` with `mcp: true` and `/health`, port 3000, runtime node).
 - `modules/picnic/` — vendored mcp-picnic source with its own `Dockerfile`
   (HTTP mode enabled by default). Self-contained: own `npm ci`, own Docker build

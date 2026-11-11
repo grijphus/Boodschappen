@@ -1,5 +1,7 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "kind": "app",
+  "name": "github__grijphus__Boodschappen",
   "modules": [
     {
       "type": "app",

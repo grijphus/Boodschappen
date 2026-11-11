@@ -74,3 +74,7 @@ coverage.xml
 
 # Vendored mcp-picnic module: local install output and persisted session data
 modules/picnic/data/
+
+# Cloudflare Worker local dev state and secrets
+.wrangler
+.dev.vars

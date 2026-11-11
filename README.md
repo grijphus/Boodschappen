@@ -57,9 +57,20 @@ curl -X POST http://localhost:3000/mcp -H 'Content-Type: application/json' \
 
 1. Commit and push to `origin` (`mistral deploy` builds the pushed commit).
 2. `mistral deploy` — the report prints the app URL and its MCP server URL(s).
+   Note: managed app instances need pay-as-you-go compute slots on the org.
 3. In Studio: **Connectors → + Add connector → custom MCP**, protocol `mcp`,
    server = the app's MCP URL; credential header `x-mcp-token: <HTTP_AUTH_TOKEN>`
    (or `Authorization: Bearer <HTTP_AUTH_TOKEN>`).
 4. The `picnic_*` tools are now callable via `list_connector_tools` /
    `test_connector_http_call` and usable by agents and workflows that name the
    connector.
+
+## Alternative: Cloudflare Workers
+
+`workers/picnic/` runs the same vendored server as a Cloudflare Worker at
+`https://picnic-mcp.<subdomain>.workers.dev/mcp` (stateless MCP over JSON-RPC,
+Picnic session persisted in KV namespace `picnic-mcp`). Deploy with
+`npx wrangler deploy` after `wrangler secret put` for `PICNIC_USERNAME`,
+`PICNIC_PASSWORD`, `HTTP_AUTH_TOKEN` — see `workers/picnic/README.md`. Register
+that URL as the Studio custom MCP connector the same way as above. This path
+doesn't need Mistral compute slots.

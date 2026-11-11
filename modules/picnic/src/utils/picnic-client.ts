@@ -2,6 +2,7 @@ import PicnicClient from "picnic-api"
 import fs from "fs/promises"
 import { config } from "../config.js"
 import { resolveDeviceId } from "./device-id.js"
+import { getKeyValueStore } from "./storage.js"
 
 // Singleton instance for caching
 let picnicClientInstance: InstanceType<typeof PicnicClient> | null = null
@@ -67,7 +68,11 @@ function isTwoFactorAuthenticationError(error: unknown): boolean {
 
 async function loadSession(): Promise<string | null> {
   try {
-    const data = await fs.readFile(config.PICNIC_SESSION_FILE, "utf-8")
+    const kv = getKeyValueStore()
+    const data = kv
+      ? await kv.get("picnic-session")
+      : await fs.readFile(config.PICNIC_SESSION_FILE, "utf-8")
+    if (!data) return null
     const session = JSON.parse(data)
     return session.authKey || null
   } catch {
@@ -79,7 +84,12 @@ export async function saveSession(): Promise<void> {
   if (!picnicClientInstance) return
   const authKey = picnicClientInstance.authKey
   if (authKey) {
-    await fs.writeFile(config.PICNIC_SESSION_FILE, JSON.stringify({ authKey }))
+    const kv = getKeyValueStore()
+    if (kv) {
+      await kv.set("picnic-session", JSON.stringify({ authKey }))
+    } else {
+      await fs.writeFile(config.PICNIC_SESSION_FILE, JSON.stringify({ authKey }))
+    }
   }
 }
 
@@ -206,9 +216,14 @@ export function getPicnicClient(): InstanceType<typeof PicnicClient> {
 
 export async function resetPicnicClient(): Promise<void> {
   picnicClientInstance = null
+  const kv = getKeyValueStore()
   try {
-    await fs.unlink(config.PICNIC_SESSION_FILE)
+    if (kv) {
+      await kv.delete("picnic-session")
+    } else {
+      await fs.unlink(config.PICNIC_SESSION_FILE)
+    }
   } catch {
-    // Session file may not exist, ignore
+    // Session may not exist, ignore
   }
 }

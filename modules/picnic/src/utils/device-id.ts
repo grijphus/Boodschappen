@@ -1,6 +1,7 @@
 import crypto from "crypto"
 import fs from "fs/promises"
 import { config } from "../config.js"
+import { getKeyValueStore } from "./storage.js"
 
 /**
  * Resolve the device id used for the x-picnic-did header.
@@ -19,17 +20,26 @@ export async function resolveDeviceId(): Promise<string> {
     return config.PICNIC_DEVICE_ID
   }
 
+  const kv = getKeyValueStore()
   try {
-    const data = await fs.readFile(config.PICNIC_DEVICE_FILE, "utf-8")
-    const { deviceId } = JSON.parse(data)
-    if (deviceId) return deviceId
+    const data = kv
+      ? await kv.get("picnic-device")
+      : await fs.readFile(config.PICNIC_DEVICE_FILE, "utf-8")
+    if (data) {
+      const { deviceId } = JSON.parse(data)
+      if (deviceId) return deviceId
+    }
   } catch {
     // No persisted id yet; fall through to generation.
   }
 
   const deviceId = crypto.randomBytes(8).toString("hex").toUpperCase()
   try {
-    await fs.writeFile(config.PICNIC_DEVICE_FILE, JSON.stringify({ deviceId }))
+    if (kv) {
+      await kv.set("picnic-device", JSON.stringify({ deviceId }))
+    } else {
+      await fs.writeFile(config.PICNIC_DEVICE_FILE, JSON.stringify({ deviceId }))
+    }
   } catch {
     // If persistence fails, still use the generated id for this run.
   }

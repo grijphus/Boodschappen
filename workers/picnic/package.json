@@ -1,0 +1,22 @@
+{
+  "name": "picnic-mcp-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "wrangler deploy --dry-run"
+  },
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "picnic-api": "^4.6.0",
+    "undici": "^6.21.0",
+    "zod": "^3.24.4",
+    "zod-to-json-schema": "^3.25.1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261110.1",
+    "typescript": "^5",
+    "wrangler": "^4"
+  }
+}
